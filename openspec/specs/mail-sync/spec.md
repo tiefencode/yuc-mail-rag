@@ -1,5 +1,7 @@
 # mail-sync
 
+## Purpose
+
 Read-only sync of the shadow mailbox into a local store that mirrors it exactly, including deletions.
 
 ## Definitions
