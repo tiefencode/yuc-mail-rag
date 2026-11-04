@@ -1,0 +1,29 @@
+{
+  "name": "yuc-mail-rag",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@10.30.3",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "sync": "node src/cli.ts sync",
+    "stats": "node src/cli.ts stats",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "imapflow": "^2.10.0",
+    "postal-mime": "^4.2.0"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^10.0.0",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^24.19.2",
+    "eslint": "^10.14.0",
+    "typescript": "^6.0.3",
+    "vitest": "^5.1.0"
+  }
+}
