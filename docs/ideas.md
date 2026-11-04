@@ -5,4 +5,4 @@
 
 ## Rule candidates
 
-None yet.
+- 2026-11-04 (one-off imapsync import): Claude deleted the imapsync IMAP logs, the only record of the commands sent to the active mailbox, right after the commit, although 90 messages had just been found missing from the active mailbox during the copy window and the cause was still open.
