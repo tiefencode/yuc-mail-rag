@@ -5,4 +5,4 @@
 
 ## Rule candidates
 
-- 2026-11-04 (add-mail-sync): `openspec validate` (CLI 1.16.0) failed on `openspec/specs/mail-sync/spec.md` because the `## Purpose` section was missing; the spec format in the `openspec-light` skill shows neither `## Purpose` nor `## Requirements`, and no step runs `openspec validate`.
+None yet.
