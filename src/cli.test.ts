@@ -121,7 +121,7 @@ describe('Requirement: Configuration outside the repository', () => {
       port: 993,
       user: 'p1',
       password: 'secret',
-      dataDir: './data',
+      dataDir: './data.noindex',
     })
   })
 })
