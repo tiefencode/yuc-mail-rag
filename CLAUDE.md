@@ -4,7 +4,8 @@ Local, evidence-based search over the email correspondence of Young & Cold Recor
 
 ## Workflow
 
-Specs and changes follow the user skill `openspec-light`: non-trivial changes start with it, and every feature ends with its completion checklist.
+- This project uses OpenSpec: changes run through its own flow (`/opsx:explore`, `/opsx:propose`, `/opsx:update`, `/opsx:apply`, `/opsx:archive`). No other spec workflow skill applies.
+- After `/opsx:archive`, fast-forward `main` onto the feature branch without asking (root on `main`, `git merge --ff-only <branch>`), delete the branch and ask the developer to push.
 
 ## Commands
 
