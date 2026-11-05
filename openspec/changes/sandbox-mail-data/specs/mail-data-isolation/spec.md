@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Keeps the local mail cache (`data.noindex/` in the project root) technically unreadable for the coding agent, Claude Code, so mail content never reaches the model provider, while the developer keeps full access through their own shell.
+Keeps the local mail cache (`data.noindex/` in the project root) technically unreadable for the coding agent, Claude Code, so mail content never reaches the model provider, while the developer keeps full access through their own shell. Only the coding agent is restricted; the system's own local components keep their access.
 
 ## ADDED Requirements
 
@@ -50,7 +50,7 @@ The agent SHALL NOT be able to run a shell command outside the restrictions that
 
 ### Requirement: Developer access is unaffected
 
-Commands the developer runs in their own terminal SHALL keep full read and write access to the cache directory.
+Commands the developer runs in their own terminal, and local applications started outside Claude Code such as LM Studio, SHALL keep full read and write access to the cache directory.
 
 #### Scenario: Developer runs stats
 

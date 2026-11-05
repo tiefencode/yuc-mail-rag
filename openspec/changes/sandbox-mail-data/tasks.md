@@ -28,7 +28,7 @@
 ## 5. Documentation
 
 - [ ] 5.1 Update `CLAUDE.md`: data rules name the sandbox as the boundary; `sync` and `stats` are run by the developer; settings changes are made by the developer; verify by reading the diff
-- [ ] 5.2 Add a decision-log entry to `docs/architecture.md` (sandbox instead of separate user, removed Bash text rule, canary results); verify the entry references the canary outcome
+- [ ] 5.2 Add a decision-log entry to `docs/architecture.md` (sandbox instead of separate user, scope limited to Claude Code with LM Studio and developer commands keeping access, accepted residual risk of planted files, removed Bash text rule, canary results); verify the entry references the canary outcome and the residual risk
 - [ ] 5.3 Run `openspec validate sandbox-mail-data --strict`; verify it passes
 
 ## Workflow follow-up

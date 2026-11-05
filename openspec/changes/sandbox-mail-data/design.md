@@ -30,6 +30,7 @@ Not stated in the docs, and therefore verified by the canary test: that `denyRea
 - Write protection of the cache from the agent. The goal is confidentiality; a corrupted cache is rebuildable from IMAP.
 - A separate operating-system user (option B from the discussion). Revisit only if the canary test shows a gap the sandbox cannot close.
 - Protection for a non-default `DATA_DIR`.
+- Restricting local system components. LM Studio and future project commands that pass mail to a local model run outside Claude Code and keep full access. When the agent builds them, it works against synthetic fixtures; evaluation against real data is run by the developer, who hands back aggregated results.
 
 ## Decisions
 
@@ -82,6 +83,7 @@ The developer creates `data.noindex/CANARY.txt` with a random marker string. The
 - [MCP servers, hooks, and the browser tools run outside the sandbox; a browser can open `file://` URLs] → No project MCP servers or hooks exist. The canary test includes a `file://` attempt in the built-in browser; the data rule in `CLAUDE.md` keeps forbidding it. If the browser can read the canary, record it as a known limitation.
 - [Higher-ranked settings can disable the sandbox] → Accepted, see Non-Goals; the developer owns those files.
 - [Commands that need other hosts (e.g. `gh`, git over SSH) fail or prompt in the sandbox on macOS] → Push and remote work already belong to the developer. Hosts are added only when a concrete need comes up.
+- [The agent's file tools run outside the sandbox and could write files that later run with full rights: hooks or MCP servers in the user configuration, git hooks, or project code the developer runs] → Accepted: the threat model is accidental reads and injected instructions, not deliberate circumvention. The developer reviews diffs before running project commands against the cache. Extra `Edit` deny rules for user configuration and git hooks were rejected: they target only deliberate circumvention and cannot close the project-code path.
 - [`denyRead` might not apply below the writable working directory] → Canary test; if it fails, stop and revisit D1.
 
 ## Migration Plan

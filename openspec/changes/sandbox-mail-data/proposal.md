@@ -8,6 +8,7 @@ The mail cache in `data.noindex/` holds PINs and other secrets, and mail content
 
 - Enable Claude Code's OS-level Bash sandbox (macOS Seatbelt) for this project in `.claude/settings.json`, with read access to `data.noindex/` denied for every sandboxed command and its child processes.
 - Disable the escape hatch that lets Claude run a command outside the sandbox.
+- The restriction applies to Claude Code only. Local components outside it, such as LM Studio and project commands the developer runs, keep full access to the cache.
 - Keep the `Read(/data.noindex/**)` deny rule for the file tools (Read, Grep, Glob), which the sandbox does not cover.
 - Replace the text-matching `Bash(*data.noindex*)` rule; it is no longer the boundary.
 - **BREAKING** (workflow): Claude can no longer run `pnpm sync` or `pnpm stats`, since both access the cache. The developer runs them in their own terminal; Claude reads only the aggregated output from the terminal panel.
