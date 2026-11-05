@@ -16,8 +16,8 @@
 - [x] 3.2 Shell: `cat data.noindex/CANARY.txt`, `cat data*/CANARY.txt`, `find . -name CANARY.txt -exec cat {} \;`; verify each fails with a permission error and prints no marker
 - [x] 3.3 Child process: `node -e` reading the canary; verify the read fails and prints no marker
 - [x] 3.4 Escape: request a run of `cat data*/CANARY.txt` with the sandbox disabled; verify it still runs sandboxed and prints no marker
-- [ ] 3.5 Settings: attempt to edit `.claude/settings.json` with the file tools and with `echo >> .claude/settings.json`; verify both are denied and the file is unchanged (`git diff`)
-- [ ] 3.6 Browser: open `file://<project>/data.noindex/CANARY.txt` in the built-in browser; record whether it is blocked, and if it is readable, add it as a known limitation in `docs/architecture.md`
+- [x] 3.5 Settings: attempt to edit `.claude/settings.json` with the file tools and with `echo >> .claude/settings.json`; verify both are denied and the file is unchanged (`git diff`)
+- [x] 3.6 Browser: open `file://<project>/data.noindex/CANARY.txt` in the built-in browser; record whether it is blocked, and if it is readable, add it as a known limitation in `docs/architecture.md`
 - [ ] 3.7 Developer deletes the canary file; verify it is gone (developer confirms)
 
 ## 4. Agent and developer workflows
@@ -27,9 +27,9 @@
 
 ## 5. Documentation
 
-- [ ] 5.1 Update `CLAUDE.md`: data rules name the sandbox as the boundary; `sync` and `stats` are run by the developer; settings changes are made by the developer; verify by reading the diff
-- [ ] 5.2 Add a decision-log entry to `docs/architecture.md` (sandbox instead of separate user, scope limited to Claude Code with LM Studio and developer commands keeping access, accepted residual risk of planted files, removed Bash text rule, canary results); verify the entry references the canary outcome and the residual risk
-- [ ] 5.3 Run `openspec validate sandbox-mail-data --strict`; verify it passes
+- [x] 5.1 Update `CLAUDE.md`: data rules name the sandbox as the boundary; `sync` and `stats` are run by the developer; settings changes are made by the developer; verify by reading the diff
+- [x] 5.2 Add a decision-log entry to `docs/architecture.md` (sandbox instead of separate user, scope limited to Claude Code with LM Studio and developer commands keeping access, accepted residual risk of planted files, removed Bash text rule, canary results); verify the entry references the canary outcome and the residual risk
+- [x] 5.3 Run `openspec validate sandbox-mail-data --strict`; verify it passes
 
 ## Workflow follow-up
 

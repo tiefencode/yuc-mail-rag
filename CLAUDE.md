@@ -9,7 +9,7 @@ Local, evidence-based search over the email correspondence of Young & Cold Recor
 
 ## Commands
 
-- `pnpm sync` (`--log-imap` prints the IMAP command log to stderr), `pnpm stats`
+- `pnpm sync` (`--log-imap` prints the IMAP command log to stderr), `pnpm stats`: the developer runs them in their own terminal; they fail in Claude's sandboxed shell
 - Checks before every commit: `pnpm lint`, `pnpm typecheck`, `pnpm test`
 - Setup: copy `.env.example` to `.env`; store the IMAP password once with `security add-generic-password -s yuc-mail-rag -a <IMAP_USER> -w`
 
@@ -18,4 +18,4 @@ Local, evidence-based search over the email correspondence of Young & Cold Recor
 - The shadow mailbox on Mittwald is the source of truth. The local data directory is a derived cache and must be rebuildable from IMAP at any time.
 - Never modify server state (no flag changes, moves, deletes, appends).
 - Credentials and mail data are never committed.
-- Claude never reads mail content (`data.noindex/`, denied in `.claude/settings.json`), so it does not reach the API; work with aggregated output such as `pnpm stats` instead.
+- Claude never reads mail content, so it does not reach the API: `.claude/settings.json` denies `data.noindex/` to the file tools and, through the Claude Code sandbox, to every shell command. Work with aggregated output the developer runs, such as `pnpm stats`, read from the terminal panel. Only the developer changes `.claude/settings*.json`.
