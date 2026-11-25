@@ -8,6 +8,10 @@ schema: spec-driven
 #   context: |
 #     Designs and tasks must cover Windows, macOS, and Linux
 #     Write all artifacts in Spanish
+context: |
+  Target machine, the only one the system runs on: MacBook Pro 16" (Nov. 2024), Apple M4 Pro,
+  48 GB unified memory, macOS Sequoia 15.8.3. The local LLM (phase 3, LM Studio) runs on this
+  machine; model size, quantization and context length must fit 48 GB shared with the OS and apps.
 
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.

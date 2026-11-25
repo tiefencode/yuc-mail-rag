@@ -29,6 +29,10 @@ Order and scope are revised as results come in.
 5. **Sent mail**: progressive add-on.
 6. **Attachments and context**: document text, entity aliases, extraction of commitments. Starts by deciding whether large attachments stay on the server and are fetched on demand (see `docs/ideas.md`).
 
+## Target machine
+
+Everything runs on one machine: MacBook Pro 16" (Nov. 2024), Apple M4 Pro, 48 GB unified memory, macOS Sequoia 15.8.3. The local LLM of phase 3 shares these 48 GB with the operating system and other apps, which bounds model size, quantization and context length.
+
 ## Known limitations
 
 - Sent mail is not captured by forwarding. Partial recovery via quotes in replies; dedicated capture is deferred.
