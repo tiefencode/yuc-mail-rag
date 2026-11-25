@@ -1,7 +1,9 @@
 import type { SyncDeps } from './cli.ts'
+import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import process from 'node:process'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { runStats, runSync } from './cli.ts'
 import { loadConfig } from './config.ts'
@@ -135,6 +137,19 @@ describe('Requirement: Storage statistics', () => {
     expect(output).toHaveLength(2)
     for (const text of output)
       expect(text.split('\n')[0]).toBe('messages: 0 · 0 B')
+  })
+})
+
+describe('command line', () => {
+  it('prints the usage instead of a stack trace for an unknown option', () => {
+    const result = spawnSync(process.execPath, ['src/cli.ts', 'search', '--bogus', 'x'], {
+      env: { ...process.env, DATA_DIR: dataDir },
+      encoding: 'utf8',
+    })
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('--bogus')
+    expect(result.stderr).toContain('usage: cli.ts')
+    expect(result.stderr).not.toMatch(/\n\s+at /)
   })
 })
 

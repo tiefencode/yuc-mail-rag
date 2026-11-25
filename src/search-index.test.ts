@@ -162,6 +162,19 @@ describe('Requirement: Index follows the cache', () => {
     ])
   })
 
+  it('survives two updates running at the same time', async () => {
+    const fake = server()
+    fake.addMessage('INBOX', eml({ subject: 'Gleichzeitig', messageId: 'a@x' }))
+    await syncCache(dataDir, fake)
+
+    await Promise.all([
+      updateIndex(dataDir),
+      updateIndex(dataDir),
+    ])
+
+    expect(subjects()).toEqual(['Gleichzeitig'])
+  })
+
   it('recomputes threads when a new message links two threads', async () => {
     const fake = server()
     fake.addMessage('INBOX', eml({ subject: 'A', messageId: 'a@x' }))

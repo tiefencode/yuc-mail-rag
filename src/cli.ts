@@ -151,23 +151,31 @@ function normalizeArgs(args: string[]): string[] {
 async function main(): Promise<number> {
   if (existsSync('.env'))
     process.loadEnvFile('.env')
-  const { positionals, values } = parseArgs({
-    args: normalizeArgs(process.argv.slice(2)),
-    allowPositionals: true,
-    options: {
-      'log-imap': { type: 'boolean', default: false },
-      'limit': { type: 'string' },
-      'from': { type: 'string' },
-      'since': { type: 'string' },
-      'until': { type: 'string' },
-      'category': { type: 'string' },
-      'attachment': { type: 'string' },
-      'full': { type: 'boolean', default: false },
-      'query': { type: 'string' },
-      'pick': { type: 'string' },
-      'question': { type: 'string' },
-    },
-  })
+  let parsed
+  try {
+    parsed = parseArgs({
+      args: normalizeArgs(process.argv.slice(2)),
+      allowPositionals: true,
+      options: {
+        'log-imap': { type: 'boolean', default: false },
+        'limit': { type: 'string' },
+        'from': { type: 'string' },
+        'since': { type: 'string' },
+        'until': { type: 'string' },
+        'category': { type: 'string' },
+        'attachment': { type: 'string' },
+        'full': { type: 'boolean', default: false },
+        'query': { type: 'string' },
+        'pick': { type: 'string' },
+        'question': { type: 'string' },
+      },
+    })
+  }
+  catch (error) {
+    console.error(`${(error as Error).message}\n\n${USAGE}`)
+    return 1
+  }
+  const { positionals, values } = parsed
   const out = (text: string): void => console.log(text)
   const dataDir = process.env.DATA_DIR?.trim() || DEFAULT_DATA_DIR
 

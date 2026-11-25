@@ -115,21 +115,26 @@ export async function updateIndex(dataDir: string, options: UpdateOptions = {}):
     }
 
     let spamSuspects = 0
+    // Another update (sync and a search at once) may have written since `known` was read; the write lock
+    // taken by `immediate` and a fresh read of the stored messages keep the two from inserting twice.
     db.transaction(() => {
-      for (const sha of known) {
+      const stored = new Set(db.prepare('SELECT sha FROM messages').pluck().all() as string[])
+      for (const sha of stored) {
         if (!wanted.has(sha))
           removeMessage(db, sha)
       }
       const setFolders = db.prepare('UPDATE messages SET folders = ? WHERE sha = ?')
       for (const message of indexable) {
-        if (known.has(message.sha))
+        if (stored.has(message.sha))
           setFolders.run(foldersText(message.folders), message.sha)
       }
-      for (const { message, parsed } of fresh)
-        insertMessage(db, message, parsed)
+      for (const { message, parsed } of fresh) {
+        if (!stored.has(message.sha))
+          insertMessage(db, message, parsed)
+      }
       assignThreads(db)
       spamSuspects = storeSuspects(db, spam)
-    })()
+    }).immediate()
 
     return {
       indexed: wanted.size,
@@ -192,18 +197,22 @@ async function readSpam(dataDir: string, messages: CachedMessage[]): Promise<Spa
 }
 
 function ensureSchema(db: Database.Database): void {
-  const hasMeta = db.prepare('SELECT 1 FROM sqlite_master WHERE type = \'table\' AND name = \'meta\'').get() !== undefined
-  const version = hasMeta
-    ? db.prepare('SELECT value FROM meta WHERE key = \'rules_version\'').pluck().get() as string | undefined
-    : undefined
-  if (version === String(RULES_VERSION))
-    return
+  // Checked again under the write lock, so a second update starting at the same time does not drop fresh tables.
   db.transaction(() => {
+    if (rulesVersion(db) === String(RULES_VERSION))
+      return
     for (const table of TABLES)
       db.exec(`DROP TABLE IF EXISTS ${table}`)
     db.exec(SCHEMA)
     db.prepare('INSERT INTO meta (key, value) VALUES (\'rules_version\', ?)').run(String(RULES_VERSION))
-  })()
+  }).immediate()
+}
+
+function rulesVersion(db: Database.Database): string | undefined {
+  const hasMeta = db.prepare('SELECT 1 FROM sqlite_master WHERE type = \'table\' AND name = \'meta\'').get() !== undefined
+  return hasMeta
+    ? db.prepare('SELECT value FROM meta WHERE key = \'rules_version\'').pluck().get() as string | undefined
+    : undefined
 }
 
 async function parseOrNull(parse: (raw: Uint8Array) => Promise<ParsedMessage>, dataDir: string, sha: string): Promise<ParsedMessage | null> {
