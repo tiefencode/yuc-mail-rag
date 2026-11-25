@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { runEval, runTestset } from './cli.ts'
-import { metrics, readTestSet, testsetPath } from './evaluation.ts'
+import { formatMetrics, metrics, readTestSet, testsetPath } from './evaluation.ts'
 import { sha256 } from './raw-files.ts'
 import { eml, FakeMailSource, syncCache } from './testing.ts'
 
@@ -256,6 +256,24 @@ describe('Requirement: Evaluation', () => {
     expect(output).toContain('hit@1: 0.00')
     expect(output).toContain('gone: 1')
     expect(output).toContain('\n1  gone')
+  })
+
+  it('prints the scenario metrics rounded to two decimals', () => {
+    expect(formatMetrics(metrics([1, 3, 12, null]))).toEqual([
+      'entries: 4',
+      'hit@1: 0.25',
+      'hit@5: 0.50',
+      'hit@10: 0.50',
+      'MRR: 0.35',
+    ])
+  })
+
+  it('treats a test set with an empty entry list as empty', async () => {
+    const { writeFileSync } = await import('node:fs')
+    writeFileSync(testsetPath(dataDir), JSON.stringify({ nextId: 4, entries: [] }))
+    const { code, output } = await evaluate()
+    expect(code).toBe(0)
+    expect(output.split('\n')[0]).toBe('entries: 0')
   })
 
   it('Scenario: Empty test set', async () => {

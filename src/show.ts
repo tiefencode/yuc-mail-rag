@@ -50,14 +50,12 @@ export function showThread(db: Database.Database, dataDir: string, reference: st
       '',
       message.own || '(no own text)',
     ]
+    lines.push('', `[${plural(message.quotedLines, 'quoted line')}]`)
     if (full) {
       if (message.signature)
         lines.push('', '--- signature ---', message.signature)
       if (message.quoted)
         lines.push('', '--- quoted ---', message.quoted)
-    }
-    else if (message.quotedLines > 0) {
-      lines.push('', `[${plural(message.quotedLines, 'quoted line')}]`)
     }
     return lines.join('\n')
   })

@@ -203,7 +203,7 @@ The system SHALL assign each indexed message one category out of `correspondence
 #### Scenario: Domain filter
 
 - **WHEN** `search vertrag --from audioglobe.it` runs
-- **THEN** only threads whose matching message comes from an address at `audioglobe.it` are listed
+- **THEN** only threads whose matching message comes from an address at `audioglobe.it` or one of its subdomains, such as `mail.audioglobe.it`, are listed
 
 #### Scenario: Period filter
 

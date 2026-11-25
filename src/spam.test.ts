@@ -48,6 +48,14 @@ async function check(): Promise<{ code: number, output: string }> {
 }
 
 describe('Requirement: Suspect signals', () => {
+  it('gives a reply signal for a reply to an indexed notification', async () => {
+    add('INBOX', { messageId: 'order@bandcamp.com', from: 'noreply@bandcamp.com', subject: 'New order' })
+    add('INBOX.Spam', { from: 'buyer@other.org', subject: 'Frage zur Bestellung', inReplyTo: 'order@bandcamp.com' })
+    expect((await suspects()).rows).toEqual([
+      { subject: 'Frage zur Bestellung', signals: 'reply' },
+    ])
+  })
+
   it('Scenario: Reply to a known thread', async () => {
     add('INBOX', { messageId: 'a@band.com', from: 'max@band.com', subject: 'Trackliste' })
     add('INBOX.Spam', { from: 'new@other.org', subject: 'Antwort', inReplyTo: 'a@band.com' })
@@ -186,10 +194,9 @@ describe('Requirement: Spam check command', () => {
 
     expect(code).toBe(0)
     const lines = output.split('\n')
-    expect(lines[0]).toMatch(/^[0-9a-f]{8} {2}2025-03-20 {2}x@other\.org {2}INBOX\.Spam {2}reply$/)
-    expect(lines[1]).toMatch(/^ +Neuer$/)
-    expect(lines[2]).toMatch(/^[0-9a-f]{8} {2}2025-03-03 {2}max@band\.com {2}INBOX\.Spam {2}sender, domain$/)
-    expect(lines[3]).toMatch(/^ +Älter$/)
+    expect(lines).toHaveLength(2)
+    expect(lines[0]).toMatch(/^[0-9a-f]{8} {2}2025-03-20 {2}x@other\.org {2}INBOX\.Spam {2}reply {2}Neuer$/)
+    expect(lines[1]).toMatch(/^[0-9a-f]{8} {2}2025-03-03 {2}max@band\.com {2}INBOX\.Spam {2}sender, domain {2}Älter$/)
   })
 
   it('Scenario: No suspects', async () => {

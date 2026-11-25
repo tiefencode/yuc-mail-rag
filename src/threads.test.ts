@@ -65,6 +65,21 @@ describe('Requirement: Threads', () => {
     expect(threads.get('c')).not.toBe(threads.get('a'))
   })
 
+  it('joins a lone message to a linked thread of the same sender and subject, whatever the sha order', () => {
+    const threads = buildThreads([
+      message('a', { messageId: 'a', fromAddress: 'max@band.com', subject: 'Trackliste' }),
+      message('b', { messageId: 'b', fromAddress: 'max@band.com', subject: 'Trackliste' }),
+      message('c', {
+        messageId: 'c',
+        references: ['b'],
+        fromAddress: 'max@band.com',
+        subject: 'Re: Trackliste',
+      }),
+    ])
+    expect(threads.get('a')).toBe(threads.get('b'))
+    expect(threads.get('b')).toBe(threads.get('c'))
+  })
+
   it('does not use the subject fallback for messages linked by headers', () => {
     const threads = buildThreads([
       message('a', { messageId: 'a', fromAddress: 'max@band.com', subject: 'Promo' }),

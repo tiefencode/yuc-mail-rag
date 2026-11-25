@@ -125,6 +125,17 @@ export function metrics(ranks: (number | null)[]): Metrics {
   }
 }
 
+/** One line per metric, rounded to two decimals. */
+export function formatMetrics(result: Metrics): string[] {
+  return [
+    `entries: ${result.entries}`,
+    `hit@1: ${result.hit1.toFixed(2)}`,
+    `hit@5: ${result.hit5.toFixed(2)}`,
+    `hit@10: ${result.hit10.toFixed(2)}`,
+    `MRR: ${result.mrr.toFixed(2)}`,
+  ]
+}
+
 type Rank = number | '-' | 'gone'
 
 /** Rank of each entry: the position of the first result thread that holds an expected message. */
@@ -155,15 +166,11 @@ export function rankEntries(db: Database.Database, set: TestSet): { id: number, 
 /** Metrics and ranks per entry id; no question, query or mail content. */
 export function formatEval(db: Database.Database, dataDir: string): string {
   const ranked = rankEntries(db, readTestSet(dataDir))
-  const result = metrics(ranked.map(({ rank }) => typeof rank === 'number'
+  const ranks = ranked.map(({ rank }) => typeof rank === 'number'
     ? rank
-    : null))
+    : null)
   return [
-    `entries: ${result.entries}`,
-    `hit@1: ${result.hit1.toFixed(2)}`,
-    `hit@5: ${result.hit5.toFixed(2)}`,
-    `hit@10: ${result.hit10.toFixed(2)}`,
-    `MRR: ${result.mrr.toFixed(2)}`,
+    ...formatMetrics(metrics(ranks)),
     `gone: ${ranked.filter(({ rank }) => rank === 'gone').length}`,
     ...(ranked.length > 0
       ? ['']

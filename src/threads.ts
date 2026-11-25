@@ -69,19 +69,29 @@ export function buildThreads(messages: ThreadInput[]): Map<string, string> {
     const root = find(`m:${message.sha}`)
     linked.set(root, (linked.get(root) ?? 0) + 1)
   }
-  const isLinked = (message: ThreadInput): boolean => linked.get(find(`m:${message.sha}`))! > 1
+  // Taken before the subject fallback changes any thread.
+  const linkedShas = new Set(messages.filter(message => linked.get(find(`m:${message.sha}`))! > 1).map(message => message.sha))
+  const isLinked = (message: ThreadInput): boolean => linkedShas.has(message.sha)
 
-  const firstBySenderSubject = new Map<string, string>()
+  // Lone correspondence joins a thread of the same sender and subject: a linked one if there is one
+  // (the first by sha), otherwise the other lone messages. Linked threads are never merged with each other.
+  const bySenderSubject = new Map<string, ThreadInput[]>()
   for (const message of [...messages].sort((a, b) => a.sha.localeCompare(b.sha))) {
     const subject = normalizeSubject(message.subject)
     if (message.category !== 'correspondence' || !message.fromAddress || subject === '')
       continue
     const key = `${message.fromAddress}\n${subject}`
-    const first = firstBySenderSubject.get(key)
-    if (first === undefined)
-      firstBySenderSubject.set(key, message.sha)
-    else if (!isLinked(message))
-      union(`m:${message.sha}`, `m:${first}`)
+    bySenderSubject.set(key, [
+      ...(bySenderSubject.get(key) ?? []),
+      message,
+    ])
+  }
+  for (const group of bySenderSubject.values()) {
+    const anchor = group.find(isLinked) ?? group[0]!
+    for (const message of group) {
+      if (!isLinked(message))
+        union(`m:${message.sha}`, `m:${anchor.sha}`)
+    }
   }
 
   const smallest = new Map<string, string>()

@@ -84,6 +84,13 @@ describe('Requirement: Show command', () => {
     const { output } = await show(b!.slice(0, 8), true)
     expect(output).toContain('Kommt die Liste?')
     expect(output).toContain('Max Band')
+    expect(output).toContain('[3 quoted lines]')
+  })
+
+  it('prints the number of quoted lines also when it is zero', async () => {
+    const [, a] = await cache(...thread)
+    const { output } = await show(a!.slice(0, 8))
+    expect(output).toContain('[0 quoted lines]')
   })
 
   it('Scenario: Unknown or ambiguous reference', async () => {

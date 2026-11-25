@@ -40,27 +40,26 @@ export interface Correspondence {
   subjects: Set<string>
 }
 
-/** What the indexed correspondence tells about known threads, senders, domains and subjects. */
+/**
+ * What the index tells about known threads (ids of every indexed message and of the messages it references)
+ * and, from correspondence only, about known senders, domains and subjects.
+ */
 export function readCorrespondence(db: Database.Database): Correspondence {
-  const rows = db.prepare('SELECT sha, message_id AS messageId, from_address AS fromAddress, domain, subject FROM messages WHERE category = \'correspondence\'').all() as {
-    sha: string
-    messageId: string | null
-    fromAddress: string | null
-    domain: string | null
-    subject: string | null
-  }[]
   const known: Correspondence = {
-    ids: new Set(),
+    ids: new Set([
+      ...db.prepare('SELECT message_id FROM messages WHERE message_id IS NOT NULL').pluck().all() as string[],
+      ...db.prepare('SELECT id FROM refs').pluck().all() as string[],
+    ]),
     senders: new Set(),
     domains: new Set(),
     subjects: new Set(),
   }
-  const refs = db.prepare('SELECT id FROM refs WHERE sha = ?').pluck()
+  const rows = db.prepare('SELECT from_address AS fromAddress, domain, subject FROM messages WHERE category = \'correspondence\'').all() as {
+    fromAddress: string | null
+    domain: string | null
+    subject: string | null
+  }[]
   for (const row of rows) {
-    if (row.messageId)
-      known.ids.add(row.messageId)
-    for (const id of refs.all(row.sha) as string[])
-      known.ids.add(id)
     if (row.fromAddress)
       known.senders.add(row.fromAddress)
     if (row.domain && !isFreeMailDomain(row.domain))
@@ -115,8 +114,7 @@ export function formatSuspects(db: Database.Database): string {
   }[]
   if (rows.length === 0)
     return 'no spam suspects'
-  return rows.map(row => [
-    `${row.sha.slice(0, 8)}  ${day(row.date)}  ${row.fromAddress ?? '(unknown)'}  ${row.folder}  ${row.signals}`,
-    `          ${row.subject ?? '(no subject)'}`,
-  ].join('\n')).join('\n')
+  return rows
+    .map(row => `${row.sha.slice(0, 8)}  ${day(row.date)}  ${row.fromAddress ?? '(unknown)'}  ${row.folder}  ${row.signals}  ${row.subject ?? '(no subject)'}`)
+    .join('\n')
 }
