@@ -1,5 +1,6 @@
 import type { Header } from 'postal-mime'
 import PostalMime from 'postal-mime'
+import { headerSection } from './headers.ts'
 import { htmlToText } from './html-text.ts'
 
 export interface AttachmentName {
@@ -39,6 +40,18 @@ export async function parseMessage(raw: Uint8Array): Promise<ParsedMessage> {
     attachments: email.attachments
       .filter(attachment => attachment.filename)
       .map(attachment => attachmentName(attachment.filename!)),
+  }
+}
+
+/** `Message-ID`, `In-Reply-To` and `References` from the header section only; the body is never parsed. */
+export async function parseThreadHeaders(raw: Uint8Array): Promise<{ messageId: string | null, ids: string[] }> {
+  const email = await PostalMime.parse(headerSection(raw))
+  return {
+    messageId: messageIds(firstHeader(email.headers, 'message-id'))[0] ?? null,
+    ids: [
+      ...messageIds(firstHeader(email.headers, 'in-reply-to')),
+      ...messageIds(firstHeader(email.headers, 'references')),
+    ],
   }
 }
 

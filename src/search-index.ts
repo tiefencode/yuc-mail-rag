@@ -1,11 +1,13 @@
 import type { ParsedMessage } from './parse.ts'
+import type { SpamMessage } from './spam.ts'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import Database from 'better-sqlite3'
 import { categorize } from './categories.ts'
-import { parseMessage } from './parse.ts'
+import { parseMessage, parseThreadHeaders } from './parse.ts'
 import { rawPath } from './raw-files.ts'
 import { segment } from './segment.ts'
+import { storeSuspects } from './spam.ts'
 import { dbPath } from './store.ts'
 import { buildThreads } from './threads.ts'
 
@@ -95,6 +97,7 @@ export async function updateIndex(dataDir: string, options: UpdateOptions = {}):
   const parse = options.parse ?? parseMessage
   const cached = readCache(dataDir)
   const indexable = cached.filter(message => message.folders.some(folder => !isSpamFolder(folder)))
+  const spam = await readSpam(dataDir, cached.filter(message => message.folders.every(isSpamFolder)))
 
   const db = new Database(indexPath(dataDir))
   try {
@@ -110,6 +113,7 @@ export async function updateIndex(dataDir: string, options: UpdateOptions = {}):
       fresh.push({ message, parsed: await parseOrNull(parse, dataDir, message.sha) })
     }
 
+    let spamSuspects = 0
     db.transaction(() => {
       for (const sha of known) {
         if (!wanted.has(sha))
@@ -123,11 +127,12 @@ export async function updateIndex(dataDir: string, options: UpdateOptions = {}):
       for (const { message, parsed } of fresh)
         insertMessage(db, message, parsed)
       assignThreads(db)
+      spamSuspects = storeSuspects(db, spam)
     })()
 
     return {
       indexed: wanted.size,
-      spamSuspects: 0,
+      spamSuspects,
     }
   }
   finally {
@@ -159,6 +164,30 @@ function readCache(dataDir: string): CachedMessage[] {
   finally {
     mail.close()
   }
+}
+
+// Only headers of spam messages are read; their bodies are never parsed or indexed.
+async function readSpam(dataDir: string, messages: CachedMessage[]): Promise<SpamMessage[]> {
+  const spam: SpamMessage[] = []
+  for (const message of messages) {
+    let ids: string[] = []
+    try {
+      const headers = await parseThreadHeaders(readFileSync(rawPath(dataDir, message.sha)))
+      ids = headers.ids
+    }
+    catch {
+      // Without parseable headers the sender and subject signals still apply.
+    }
+    spam.push({
+      sha: message.sha,
+      date: message.date,
+      fromAddress: message.fromAddress,
+      subject: message.subject,
+      folder: message.folders[0]!,
+      ids,
+    })
+  }
+  return spam
 }
 
 function ensureSchema(db: Database.Database): void {

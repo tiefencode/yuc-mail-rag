@@ -4,3 +4,6 @@ export class AuthError extends Error {}
 
 /** The connection is gone; the run cannot continue. */
 export class ConnectionLostError extends Error {}
+
+/** A command was called with an invalid argument; the message names it. */
+export class UsageError extends Error {}

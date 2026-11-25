@@ -29,20 +29,20 @@ Every group writes its tests first from the scenarios it names and shows them fa
 
 ## 6. Search (`mail-search`)
 
-- [ ] 6.1 Write tests for "Match only in a quote", "Attachment names searchable", "Ranking", "Search command" and "Search filters"; verify they fail
-- [ ] 6.2 Implement the weighted FTS5 query, category factor, best-message-per-thread grouping and the filters of design decision 3; verify the 6.1 ranking and filter tests pass
-- [ ] 6.3 Add `pnpm search` to `src/cli.ts` and `package.json` with the output of design decision 9, `--limit` and filter validation; verify the 6.1 command tests pass
+- [x] 6.1 Write tests for "Match only in a quote", "Attachment names searchable", "Ranking", "Search command" and "Search filters"; verify they fail
+- [x] 6.2 Implement the weighted FTS5 query, category factor, best-message-per-thread grouping and the filters of design decision 3; verify the 6.1 ranking and filter tests pass
+- [x] 6.3 Add `pnpm search` to `src/cli.ts` and `package.json` with the output of design decision 9, `--limit` and filter validation; verify the 6.1 command tests pass
 
 ## 7. Show (`mail-search`)
 
-- [ ] 7.1 Write tests for every scenario of "Show command", including `--full`; verify they fail
-- [ ] 7.2 Add `pnpm show <reference> [--full]`; verify the 7.1 tests pass
+- [x] 7.1 Write tests for every scenario of "Show command", including `--full`; verify they fail
+- [x] 7.2 Add `pnpm show <reference> [--full]`; verify the 7.1 tests pass
 
 ## 8. Spam review (`spam-review`)
 
-- [ ] 8.1 Write tests for every scenario of "Suspect signals", "Free-mail domains give no domain signal", "Suspect count" and "Spam check command"; verify they fail
-- [ ] 8.2 Compute suspects from headers of spam messages during each index update (design decision 8); verify the signal and count tests pass
-- [ ] 8.3 Add `pnpm spam-check`; verify the command tests pass
+- [x] 8.1 Write tests for every scenario of "Suspect signals", "Free-mail domains give no domain signal", "Suspect count" and "Spam check command"; verify they fail
+- [x] 8.2 Compute suspects from headers of spam messages during each index update (design decision 8); verify the signal and count tests pass
+- [x] 8.3 Add `pnpm spam-check`; verify the command tests pass
 
 ## 9. Sync integration (`mail-sync`)
 
