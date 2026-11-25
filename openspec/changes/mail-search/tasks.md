@@ -51,9 +51,9 @@ Every group writes its tests first from the scenarios it names and shows them fa
 
 ## 10. Test set and evaluation (`search-evaluation`)
 
-- [ ] 10.1 Write tests for every scenario of "Record test entries", "Maintain the test set" and "Evaluation", including a check that `eval` output holds no subject, sender or body text from the fixtures; verify they fail
-- [ ] 10.2 Implement `testset.json` handling (design decision 10) and `pnpm testset add|expect|list|remove`; verify the record and maintain tests pass
-- [ ] 10.3 Implement `pnpm eval`; verify the evaluation tests pass
+- [x] 10.1 Write tests for every scenario of "Record test entries", "Maintain the test set" and "Evaluation", including a check that `eval` output holds no subject, sender or body text from the fixtures; verify they fail
+- [x] 10.2 Implement `testset.json` handling (design decision 10) and `pnpm testset add|expect|list|remove`; verify the record and maintain tests pass
+- [x] 10.3 Implement `pnpm eval`; verify the evaluation tests pass
 
 ## 11. Documentation
 

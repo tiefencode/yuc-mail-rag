@@ -93,6 +93,10 @@ describe('Requirement: Index derived from the cache only', () => {
     expect(indexed()).toEqual(first)
   })
 
+  it('indexes nothing when the data directory does not exist yet', async () => {
+    expect(await updateIndex(join(dataDir, 'missing'))).toEqual({ indexed: 0, spamSuspects: 0 })
+  })
+
   it('indexes nothing when the cache is missing', async () => {
     const result = await updateIndex(dataDir)
     expect(result).toEqual({ indexed: 0, spamSuspects: 0 })

@@ -9,6 +9,11 @@
   "scripts": {
     "sync": "node src/cli.ts sync",
     "stats": "node src/cli.ts stats",
+    "search": "node src/cli.ts search",
+    "show": "node src/cli.ts show",
+    "spam-check": "node src/cli.ts spam-check",
+    "testset": "node src/cli.ts testset",
+    "eval": "node src/cli.ts eval",
     "test": "vitest run",
     "lint": "eslint .",
     "typecheck": "tsc"

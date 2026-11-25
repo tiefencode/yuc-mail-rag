@@ -1,6 +1,6 @@
 import type { ParsedMessage } from './parse.ts'
 import type { SpamMessage } from './spam.ts'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import Database from 'better-sqlite3'
 import { categorize } from './categories.ts'
@@ -99,6 +99,7 @@ export async function updateIndex(dataDir: string, options: UpdateOptions = {}):
   const indexable = cached.filter(message => message.folders.some(folder => !isSpamFolder(folder)))
   const spam = await readSpam(dataDir, cached.filter(message => message.folders.every(isSpamFolder)))
 
+  mkdirSync(dataDir, { recursive: true })
   const db = new Database(indexPath(dataDir))
   try {
     db.pragma('journal_mode = WAL')

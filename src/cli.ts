@@ -7,6 +7,7 @@ import { parseArgs } from 'node:util'
 import { keychainPassword, loadConfig } from './config.ts'
 import { DEFAULT_DATA_DIR } from './constants.ts'
 import { UsageError } from './errors.ts'
+import { addEntry, expectMessage, formatEntries, formatEval, removeEntry } from './evaluation.ts'
 import { connectImap } from './imapflow-source.ts'
 import { openIndex, updateIndex } from './search-index.ts'
 import { formatResults, parseSearchOptions, search } from './search.ts'
@@ -104,12 +105,40 @@ export async function runSpamCheck(dataDir: string, out: (text: string) => void)
   return withIndex(dataDir, out, formatSuspects)
 }
 
+export async function runTestset(dataDir: string, args: string[], raw: RawOptions, out: (text: string) => void): Promise<number> {
+  const text = (key: string): string | undefined => typeof raw[key] === 'string'
+    ? raw[key]
+    : undefined
+  return withIndex(dataDir, out, (db) => {
+    switch (args[0]) {
+      case 'add':
+        return `added entry ${addEntry(db, dataDir, text('query'), text('pick'), text('question'))}`
+      case 'expect':
+        expectMessage(db, dataDir, args[1], args[2])
+        return `entry ${args[1]} updated`
+      case 'list':
+        return formatEntries(dataDir)
+      case 'remove':
+        removeEntry(dataDir, args[1])
+        return `removed entry ${args[1]}`
+      default:
+        throw new UsageError('usage: testset add --query <words> --pick <reference> [--question <text>] | expect <id> <reference> | list | remove <id>')
+    }
+  })
+}
+
+export async function runEval(dataDir: string, out: (text: string) => void): Promise<number> {
+  return withIndex(dataDir, out, db => formatEval(db, dataDir))
+}
+
 const USAGE = [
   'usage: cli.ts sync [--log-imap]',
   '       cli.ts stats',
   '       cli.ts search <words> [--limit n] [--from address|domain] [--since date] [--until date] [--category c] [--attachment [ext]]',
   '       cli.ts show <reference> [--full]',
   '       cli.ts spam-check',
+  '       cli.ts testset add --query <words> --pick <reference> [--question <text>] | expect <id> <reference> | list | remove <id>',
+  '       cli.ts eval',
 ].join('\n')
 
 // `--attachment` takes an optional extension; without one (last, or before another option) it means any attachment.
@@ -134,6 +163,9 @@ async function main(): Promise<number> {
       'category': { type: 'string' },
       'attachment': { type: 'string' },
       'full': { type: 'boolean', default: false },
+      'query': { type: 'string' },
+      'pick': { type: 'string' },
+      'question': { type: 'string' },
     },
   })
   const out = (text: string): void => console.log(text)
@@ -151,6 +183,10 @@ async function main(): Promise<number> {
       return runStats(dataDir, out)
     case 'search':
       return runSearch(dataDir, positionals.slice(1), values, out)
+    case 'testset':
+      return runTestset(dataDir, positionals.slice(1), values, out)
+    case 'eval':
+      return runEval(dataDir, out)
     case 'spam-check':
       return runSpamCheck(dataDir, out)
     case 'show':
