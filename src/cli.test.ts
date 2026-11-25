@@ -6,7 +6,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { runStats, runSync } from './cli.ts'
 import { loadConfig } from './config.ts'
 import { AuthError } from './errors.ts'
-import { formatStats } from './stats.ts'
 import { openStore } from './store.ts'
 import { emptySummary, formatSummary } from './sync.ts'
 import { eml, FakeMailSource } from './testing.ts'
@@ -128,11 +127,12 @@ describe('Requirement: Configuration outside the repository', () => {
 
 describe('Requirement: Storage statistics', () => {
   it('Scenario: Empty store (output and exit code)', () => {
-    const zero = formatStats({ count: 0, bytes: 0, senders: [] })
     const output: string[] = []
-    expect(runStats(dataDir, text => output.push(text))).toBe(0)
+    expect(runStats(join(dataDir, 'missing'), text => output.push(text))).toBe(0)
     openStore(dataDir).close()
     expect(runStats(dataDir, text => output.push(text))).toBe(0)
-    expect(output).toEqual([zero, zero])
+    expect(output).toHaveLength(2)
+    for (const text of output)
+      expect(text.split('\n')[0]).toBe('messages: 0 · 0 B')
   })
 })

@@ -1,8 +1,8 @@
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { readStats } from './stats.ts'
+import { formatStats, readStats } from './stats.ts'
 import { openStore } from './store.ts'
 import { sync } from './sync.ts'
 import { eml, FakeMailSource } from './testing.ts'
@@ -75,8 +75,35 @@ describe('Requirement: Storage statistics', () => {
   })
 
   it('Scenario: Empty store', () => {
-    expect(readStats(join(dataDir, 'missing'))).toEqual({ count: 0, bytes: 0, senders: [] })
+    expect(readStats(join(dataDir, 'missing'))).toEqual({
+      count: 0,
+      bytes: 0,
+      senders: [],
+      disk: { total: 0, raw: 0, database: 0 },
+    })
     openStore(dataDir).close()
-    expect(readStats(dataDir)).toEqual({ count: 0, bytes: 0, senders: [] })
+    const stats = readStats(dataDir)
+    expect(stats).toMatchObject({ count: 0, bytes: 0, senders: [] })
+    expect(stats.disk.raw).toBe(0)
+    expect(formatStats(stats)).toContain('messages: 0 · 0 B')
+  })
+
+  it('Scenario: Disk usage', async () => {
+    const server = new FakeMailSource()
+    server.addFolder('INBOX')
+    server.addMessage('INBOX', eml({
+      from: 'a@example.com',
+      body: 'x'.repeat(9000),
+    }))
+    server.addMessage('INBOX', eml({ from: 'b@example.com', body: 'y' }))
+    await syncFrom(server)
+    writeFileSync(join(dataDir, 'other.txt'), 'z'.repeat(5000))
+
+    const { bytes, disk } = readStats(dataDir)
+    expect(disk.raw).toBeGreaterThanOrEqual(bytes)
+    expect(disk.raw % 512).toBe(0)
+    expect(disk.database).toBeGreaterThan(0)
+    expect(disk.total).toBeGreaterThanOrEqual(disk.raw + disk.database + 5000)
+    expect(formatStats(readStats(dataDir))).toMatch(/^disk: .+ \(raw .+ · database .+\)$/m)
   })
 })

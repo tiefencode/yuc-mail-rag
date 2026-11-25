@@ -53,10 +53,17 @@ export interface SenderStats {
   bytes: number
 }
 
+export interface DiskUsage {
+  total: number
+  raw: number
+  database: number
+}
+
 export interface Stats {
   count: number
   bytes: number
   senders: SenderStats[]
+  disk: DiskUsage
 }
 
 export interface Config {
