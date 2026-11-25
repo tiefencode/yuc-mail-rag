@@ -2,7 +2,7 @@
 
 Local, evidence-based search over the email correspondence of Young & Cold Records. Architecture and decision log: [docs/architecture.md](docs/architecture.md).
 
-The current phase is the mail sync: a read-only copy of the shadow mailbox on Mittwald into a local cache.
+Two phases are in place: the mail sync, a read-only copy of the shadow mailbox on Mittwald into a local cache, and a full-text search over that cache without an LLM.
 
 ## Requirements
 
@@ -62,10 +62,13 @@ new locations: 12
 removed locations: 0
 deleted messages: 0
 Message-IDs with several sources: 0
+spam suspects: 0
 errors: 0
 ```
 
 The exit code is 0 only if `errors` is 0. Each error is listed below the summary.
+
+After the download, `sync` updates the search index (see [Search](#search)). `spam suspects` counts messages in spam folders that look like correspondence; `pnpm spam-check` lists them.
 
 To see the IMAP commands that were sent (for example to confirm that nothing writes to the server), print the command log to stderr:
 
@@ -80,7 +83,7 @@ pnpm sync --log-imap
 
 ### Rebuilding the cache
 
-The local cache is derived data. To rebuild it from scratch, delete `DATA_DIR` and run `pnpm sync` again.
+The local cache is derived data. To rebuild it from scratch, delete `DATA_DIR` and run `pnpm sync` again. The search index `DATA_DIR/index.db` is derived from the cache; delete it to rebuild it with the next command.
 
 ## Statistics
 
@@ -89,6 +92,65 @@ pnpm stats
 ```
 
 Prints the number of stored messages and their total size, overall and per sender address. It reads only the local cache and needs no server connection.
+
+## Search
+
+All search commands read only the local cache and need no server connection. Each one first brings the index `DATA_DIR/index.db` in step with the cache, and rebuilds it completely when the indexing rules changed.
+
+```bash
+pnpm search trackliste album
+```
+
+- All words must match, case and accents ignored (`muller` finds `Müller`). `vertrieb*` matches as prefix, `'"final mix"'` as phrase.
+- One result per thread, with the best matching message: its reference, date, sender, category, the thread's size and date range, subject and a passage.
+- Correspondence ranks before notifications (shop, Bandcamp, PayPal, Discogs and similar services) and bounces. Text in quotes and signatures counts, but less than new text. Attachment file names are searchable, attachment content is not.
+- Spam folders (`…Spam`, `…Junk`) are not searched.
+
+Filters, combined with AND:
+
+| Option | Example | Meaning |
+|---|---|---|
+| `--from` | `--from audioglobe.it` | sender address or domain, subdomains included |
+| `--since`, `--until` | `--since 2024 --until 2024-06` | date as `YYYY`, `YYYY-MM` or `YYYY-MM-DD`, both inclusive |
+| `--category` | `--category notification` | `correspondence`, `notification` or `bounce` |
+| `--attachment` | `--attachment pdf` | with an attachment of that extension; without a value (last on the line), any attachment |
+| `--limit` | `--limit 50` | number of results, default 20 |
+
+To read a thread, pass the reference from the results:
+
+```bash
+pnpm show 1a2b3c4d
+```
+
+It prints every message of the thread with its own text, the number of quoted lines and the path of the raw file, which opens in Apple Mail with `open <path>`. `--full` adds quoted text and signatures.
+
+### Spam check
+
+```bash
+pnpm spam-check
+```
+
+Lists messages in spam folders that look like correspondence: a reply to a known thread (`reply`), a known sender (`sender`), a known organization domain (`domain`, not for free-mail providers) or a known subject (`subject`). Move real ones out of spam on the server by hand; the next `sync` indexes them. Nothing is changed on the server.
+
+### Test set
+
+The test set measures search quality with real questions. It is stored in `DATA_DIR/testset.json` and never committed.
+
+1. Search, then record the question with the message that answers it:
+
+   ```bash
+   pnpm testset add --query "trackliste album" --pick 1a2b3c4d --question "Welche Trackliste hat die Band geschickt?"
+   ```
+
+2. Add further messages that also answer it: `pnpm testset expect <id> <reference>`. Review with `pnpm testset list`, delete with `pnpm testset remove <id>`.
+
+3. Measure:
+
+   ```bash
+   pnpm eval
+   ```
+
+   It prints hit@1, hit@5, hit@10 and the mean reciprocal rank (MRR) and one rank per entry id, `-` when the expected thread is not among the first 20 results and `gone` when its message left the cache. The output holds no mail content, so it can be shared with Claude.
 
 ## Development
 

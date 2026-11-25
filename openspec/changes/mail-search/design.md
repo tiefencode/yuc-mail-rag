@@ -27,7 +27,7 @@ The index lives in its own SQLite file in the data directory, and reads `mail.db
 - Deleting `index.db` is always safe; `mail.db` stays the sync mirror only.
 - Alternative: tables inside `mail.db`. Rejected: a rebuild would write into the mirror, and a bug in indexing could damage sync state.
 
-`index.db` holds a `meta` table (`rules_version`), a `messages` table (sha, thread id, category, date, sender, domain, subject, normalized subject, has-attachment, folders), `attachments` (sha, file name, extension), `refs` (sha, referenced Message-ID), and an FTS5 table.
+`index.db` holds a `meta` table (`rules_version`), a `messages` table (sha, thread id, category, date, sender, domain, subject, Message-ID, folders, attachment count, quoted-line count, and the own, quoted and signature text for `show`), `attachments` (sha, file name, extension), `refs` (sha, referenced Message-ID), `spam_suspects`, and an FTS5 table.
 
 ### 2. Index update: diff by SHA, rebuild by version
 
@@ -37,14 +37,16 @@ A constant `RULES_VERSION` in code covers segmentation, categories, threading an
 
 `search`, `show`, `spam-check`, `testset` and `eval` call the update before reading, so the index is never stale, also when `sync` failed to update it. `sync` calls it at the end of a run (`mail-sync` delta).
 
-### 3. One FTS5 table, three weighted columns
+### 3. One FTS5 table, four weighted columns
 
 ```
-fts(own, attachments, secondary)   -- secondary = quoted text + signature
+fts(header, own, attachments, secondary)   -- header = subject + sender, secondary = quoted text + signature
 tokenize = 'unicode61 remove_diacritics 2'
-rank = bm25(fts, 1.0, 1.0, 0.3)
+rank = bm25(fts, 1.0, 1.0, 1.0, 0.3)
 ```
 
+- Subject and sender address are searchable in `header`; this also keeps an unparseable message findable (spec "Unparseable message").
+- The passage printed by `search` comes from the own text when it matches there, otherwise from the best matching column; the subject is printed anyway.
 - Quoted text stays searchable at 30 % weight: own replies exist almost only as quotes because sent mail is not captured.
 - Signatures go into `secondary`: contact data stays findable ("who was the contact at X") without signatures dominating every search for a name.
 - `remove_diacritics 2` folds `ü` to `u`; `ß` is not folded to `ss`. Accepted: the test set will show whether that matters.

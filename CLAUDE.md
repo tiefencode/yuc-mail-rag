@@ -10,7 +10,7 @@ Local, evidence-based search over the email correspondence of Young & Cold Recor
 
 ## Commands
 
-- `pnpm sync` (`--log-imap` prints the IMAP command log to stderr), `pnpm stats`: the developer runs them in their own terminal; they fail in Claude's sandboxed shell
+- `pnpm sync` (`--log-imap` prints the IMAP command log to stderr), `pnpm stats`, `pnpm search`, `pnpm show`, `pnpm spam-check`, `pnpm testset`, `pnpm eval`: the developer runs them in their own terminal; they read the cache and fail in Claude's sandboxed shell. The output of `search`, `show`, `spam-check` and `testset list` is mail content, which Claude does not read; `pnpm eval` and the `sync` summary print none
 - Checks before every commit: `pnpm lint`, `pnpm typecheck`, `pnpm test`
 - Setup: copy `.env.example` to `.env`; store the IMAP password once with `security add-generic-password -s yuc-mail-rag -a <IMAP_USER> -w`
 

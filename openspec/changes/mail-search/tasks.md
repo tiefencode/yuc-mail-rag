@@ -57,12 +57,12 @@ Every group writes its tests first from the scenarios it names and shows them fa
 
 ## 11. Documentation
 
-- [ ] 11.1 Update `README.md` with the new commands and a short test set workflow, and `CLAUDE.md` so the new commands are listed as run by the developer; verify every documented command matches `src/cli.ts` usage output
-- [ ] 11.2 Add decision log entries to `docs/architecture.md` (separate `index.db`, spam folders excluded with suspect report, category lists in code, weights and tokenizer pending `eval`); verify `pnpm lint`, `pnpm typecheck`, `pnpm test` pass
+- [x] 11.1 Update `README.md` with the new commands and a short test set workflow, and `CLAUDE.md` so the new commands are listed as run by the developer; verify every documented command matches `src/cli.ts` usage output
+- [x] 11.2 Add decision log entries to `docs/architecture.md` (separate `index.db`, spam folders excluded with suspect report, category lists in code, weights and tokenizer pending `eval`); verify `pnpm lint`, `pnpm typecheck`, `pnpm test` pass
 
 ## 12. Integration on real data
 
-- [ ] 12.1 Check before committing rule changes that `RULES_VERSION` was bumped wherever segmentation, categories, threading or tokenizer changed during this change; verify by reading the branch diff
+- [x] 12.1 Check before committing rule changes that `RULES_VERSION` was bumped wherever segmentation, categories, threading or tokenizer changed during this change; verify by reading the branch diff
 - [ ] 12.2 The developer runs `pnpm sync`, `pnpm search` with a few queries, `pnpm show` and `pnpm spam-check` in their terminal and reports problems; verify the sync summary shows the suspects line and no errors
 
 ## Workflow follow-up
