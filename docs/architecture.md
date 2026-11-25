@@ -27,7 +27,7 @@ Order and scope are revised as results come in.
 3. **Answers**: local LLM over retrieved threads, citations verified in code.
 4. **Hybrid retrieval**: embeddings, only if the test set shows a measurable gain.
 5. **Sent mail**: progressive add-on.
-6. **Attachments and context**: document text, entity aliases, extraction of commitments.
+6. **Attachments and context**: document text, entity aliases, extraction of commitments. Starts by deciding whether large attachments stay on the server and are fetched on demand (see `docs/ideas.md`).
 
 ## Known limitations
 
