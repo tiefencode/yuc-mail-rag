@@ -26,7 +26,7 @@ export async function extractMetadata(raw: Uint8Array): Promise<Metadata> {
 }
 
 // Only the header block is parsed, so broken or huge bodies cannot affect the metadata.
-function headerSection(raw: Uint8Array): Uint8Array {
+export function headerSection(raw: Uint8Array): Uint8Array {
   for (let i = 0; i < raw.length - 1; i++) {
     if (raw[i] === 0x0A && raw[i + 1] === 0x0A)
       return raw.subarray(0, i + 2)

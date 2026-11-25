@@ -4,28 +4,28 @@ Every group writes its tests first from the scenarios it names and shows them fa
 
 ## 1. Setup
 
-- [ ] 1.1 Get `better-sqlite3` working in the worktree (the developer runs `pnpm install` in their terminal if the sandbox blocks the native build) and verify `pnpm test` passes on the unchanged code
+- [x] 1.1 Get `better-sqlite3` working in the worktree (the developer runs `pnpm install` in their terminal if the sandbox blocks the native build) and verify `pnpm test` passes on the unchanged code
 
 ## 2. Parsing and segmentation (`mail-search`)
 
-- [ ] 2.1 Write tests for "HTML-only message", "Unparseable message", all scenarios of "Quoted text and signatures" except "Match only in a quote", and attachment names from "Attachment names searchable"; verify they fail
-- [ ] 2.2 Parse a raw message into headers (`Message-ID`, `In-Reply-To`, `References`, `Auto-Submitted`, `List-Unsubscribe`, `Precedence`, content type), plain text (HTML converted when missing) and attachment names; verify the 2.1 parsing tests pass
-- [ ] 2.3 Segment bodies into own text, quoted text and signature with the German and English markers of design decision 4; verify the 2.1 segmentation tests pass
+- [x] 2.1 Write tests for "HTML-only message", "Unparseable message", all scenarios of "Quoted text and signatures" except "Match only in a quote", and attachment names from "Attachment names searchable"; verify they fail
+- [x] 2.2 Parse a raw message into headers (`Message-ID`, `In-Reply-To`, `References`, `Auto-Submitted`, `List-Unsubscribe`, `Precedence`, content type), plain text (HTML converted when missing) and attachment names; verify the 2.1 parsing tests pass
+- [x] 2.3 Segment bodies into own text, quoted text and signature with the German and English markers of design decision 4; verify the 2.1 segmentation tests pass
 
 ## 3. Categories (`mail-search`)
 
-- [ ] 3.1 Write tests for every scenario of "Categories"; verify they fail
-- [ ] 3.2 Implement the category rules and lists of design decision 6 in `src/categories.ts`; verify the 3.1 tests pass
+- [x] 3.1 Write tests for every scenario of "Categories"; verify they fail
+- [x] 3.2 Implement the category rules and lists of design decision 6 in `src/categories.ts`; verify the 3.1 tests pass
 
 ## 4. Threads (`mail-search`)
 
-- [ ] 4.1 Write tests for every scenario of "Threads", including subject normalization of `Re[2]:`, `AW:`, `WG:` and nested prefixes; verify they fail
-- [ ] 4.2 Implement union-find over Message-IDs with the correspondence-only subject fallback of design decision 5; verify the 4.1 tests pass
+- [x] 4.1 Write tests for every scenario of "Threads", including subject normalization of `Re[2]:`, `AW:`, `WG:` and nested prefixes; verify they fail
+- [x] 4.2 Implement union-find over Message-IDs with the correspondence-only subject fallback of design decision 5; verify the 4.1 tests pass
 
 ## 5. Index (`mail-search`)
 
-- [ ] 5.1 Write tests for "Index derived from the cache only", "Index follows the cache", "Index rebuilt when rules change" and spam folder naming (`INBOX.Spam`, `INBOX.Import.Junk`, `Spam`); verify they fail
-- [ ] 5.2 Create `index.db` with the schema of design decision 1, reading `mail.db` read-only, and the update of design decision 2 (diff by SHA, full rebuild on `RULES_VERSION` change, threads recomputed after each update); verify the 5.1 tests pass and a test asserts `mail.db` and raw files are byte-identical after indexing
+- [x] 5.1 Write tests for "Index derived from the cache only", "Index follows the cache", "Index rebuilt when rules change" and spam folder naming (`INBOX.Spam`, `INBOX.Import.Junk`, `Spam`); verify they fail
+- [x] 5.2 Create `index.db` with the schema of design decision 1, reading `mail.db` read-only, and the update of design decision 2 (diff by SHA, full rebuild on `RULES_VERSION` change, threads recomputed after each update); verify the 5.1 tests pass and a test asserts `mail.db` and raw files are byte-identical after indexing
 
 ## 6. Search (`mail-search`)
 

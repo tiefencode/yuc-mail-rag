@@ -1,12 +1,41 @@
 import type { FetchedSource, FolderInfo, MailSource, OpenedFolder } from './types.ts'
 import { Buffer } from 'node:buffer'
 import { ConnectionLostError } from './errors.ts'
+import { openStore } from './store.ts'
+import { sync } from './sync.ts'
+
+/** Syncs the fake server into the data directory, as `pnpm sync` does before its index update. */
+export async function syncCache(dataDir: string, server: MailSource): Promise<void> {
+  const store = openStore(dataDir)
+  try {
+    const summary = await sync(server, store, dataDir)
+    if (summary.errors.length > 0)
+      throw new Error(summary.errors.join('\n'))
+  }
+  finally {
+    store.close()
+  }
+}
+
+export interface EmlAttachment {
+  name: string
+  type?: string
+  content?: string
+}
 
 export interface EmlOptions {
   from?: string
   subject?: string
   messageId?: string
-  body?: string
+  /** Plain-text body; `null` leaves the plain-text part out. */
+  body?: string | null
+  date?: string
+  inReplyTo?: string
+  references?: string[]
+  /** Extra header lines, written as given. */
+  headers?: Record<string, string>
+  html?: string
+  attachments?: EmlAttachment[]
 }
 
 export function eml(options: EmlOptions = {}): Uint8Array {
@@ -14,9 +43,46 @@ export function eml(options: EmlOptions = {}): Uint8Array {
     options.messageId !== undefined && `Message-ID: <${options.messageId}>`,
     options.from !== undefined && `From: ${options.from}`,
     options.subject !== undefined && `Subject: ${options.subject}`,
-    'Date: Wed, 04 Nov 2026 10:00:00 +0000',
+    `Date: ${options.date ?? 'Wed, 04 Nov 2026 10:00:00 +0000'}`,
+    options.inReplyTo !== undefined && `In-Reply-To: <${options.inReplyTo}>`,
+    options.references !== undefined && `References: ${options.references.map(id => `<${id}>`).join(' ')}`,
+    ...Object.entries(options.headers ?? {}).map(([key, value]) => `${key}: ${value}`),
   ].filter(Boolean)
-  return Buffer.from(`${headers.join('\r\n')}\r\n\r\n${options.body ?? 'body'}\r\n`)
+  const text = options.body === undefined
+    ? 'body'
+    : options.body
+  if (options.html === undefined && options.attachments === undefined) {
+    return Buffer.from(`${headers.join('\r\n')}\r\n\r\n${text ?? ''}\r\n`)
+  }
+
+  const boundary = 'eml-boundary'
+  const bodies: string[] = []
+  if (text !== null)
+    bodies.push(`Content-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n${text}`)
+  if (options.html !== undefined)
+    bodies.push(`Content-Type: text/html; charset=utf-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n${options.html}`)
+  // Mail clients send text and HTML as alternatives of one body.
+  const parts = bodies.length === 2
+    ? [`Content-Type: multipart/alternative; boundary="alt"\r\n\r\n${bodies.map(b => `--alt\r\n${b}`).join('\r\n')}\r\n--alt--`]
+    : bodies
+  for (const attachment of options.attachments ?? []) {
+    parts.push([
+      `Content-Type: ${attachment.type ?? 'application/octet-stream'}; name="${attachment.name}"`,
+      `Content-Disposition: attachment; filename="${attachment.name}"`,
+      'Content-Transfer-Encoding: base64',
+      '',
+      Buffer.from(attachment.content ?? 'attachment').toString('base64'),
+    ].join('\r\n'))
+  }
+  return Buffer.from([
+    ...headers,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/mixed; boundary="${boundary}"`,
+    '',
+    ...parts.map(part => `--${boundary}\r\n${part}`),
+    `--${boundary}--`,
+    '',
+  ].join('\r\n'))
 }
 
 export interface FakeMessage {
