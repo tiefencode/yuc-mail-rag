@@ -63,7 +63,7 @@ Every group writes its tests first from the scenarios it names and shows them fa
 ## 12. Integration on real data
 
 - [x] 12.1 Check before committing rule changes that `RULES_VERSION` was bumped wherever segmentation, categories, threading or tokenizer changed during this change; verify by reading the branch diff
-- [ ] 12.2 The developer runs `pnpm sync`, `pnpm search` with a few queries, `pnpm show` and `pnpm spam-check` in their terminal and reports problems; verify the sync summary shows the suspects line and no errors
+- [x] 12.2 The developer runs `pnpm sync`, `pnpm search` with a few queries, `pnpm show` and `pnpm spam-check` in their terminal and reports problems; verify the sync summary shows the suspects line and no errors
 
 ## Workflow follow-up
 
