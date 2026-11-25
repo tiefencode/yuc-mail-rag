@@ -26,6 +26,7 @@
 
 - [x] 4.1 Agent runs `pnpm lint`, `pnpm typecheck`, `pnpm test`; verify all pass as before
 - [x] 4.2 Developer runs `pnpm stats` in their own terminal; verify the agent can read the aggregated output from the terminal panel
+  - Review follow-up (2026-11-25): developer confirmed a `pnpm sync` run in their own terminal works as before (scenario "Developer runs sync").
 
 ## 5. Documentation
 
