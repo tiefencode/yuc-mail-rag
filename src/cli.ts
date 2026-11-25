@@ -42,6 +42,12 @@ export async function runSync(deps: SyncDeps): Promise<number> {
   try {
     store = openStore(config.dataDir)
     const summary = await sync(source, store, config.dataDir)
+    try {
+      summary.spamSuspects = (await updateIndex(config.dataDir)).spamSuspects
+    }
+    catch (error) {
+      summary.errors.push(`index: ${(error as Error).message}`)
+    }
     deps.out(formatSummary(summary))
     return summary.errors.length === 0
       ? 0

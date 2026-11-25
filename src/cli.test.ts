@@ -1,11 +1,12 @@
 import type { SyncDeps } from './cli.ts'
-import { existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { runStats, runSync } from './cli.ts'
 import { loadConfig } from './config.ts'
 import { AuthError } from './errors.ts'
+import { indexPath, openIndex } from './search-index.ts'
 import { openStore } from './store.ts'
 import { emptySummary, formatSummary } from './sync.ts'
 import { eml, FakeMailSource } from './testing.ts'
@@ -134,5 +135,85 @@ describe('Requirement: Storage statistics', () => {
     expect(output).toHaveLength(2)
     for (const text of output)
       expect(text.split('\n')[0]).toBe('messages: 0 · 0 B')
+  })
+})
+
+describe('Requirement: Run summary (spam suspects)', () => {
+  it('Scenario: Summary printed', async () => {
+    const server = new FakeMailSource()
+    server.addFolder('INBOX')
+    server.addFolder('INBOX.Spam')
+    server.addMessage('INBOX', eml({ messageId: 'a@x', from: 'max@band.com', subject: 'Trackliste' }))
+    server.addMessage('INBOX.Spam', eml({ messageId: 'b@x', from: 'max@band.com', subject: 'Neu' }))
+    const d = deps({
+      connect: async () => server,
+    })
+
+    expect(await runSync(d)).toBe(0)
+    expect(d.output[0]!.split('\n')).toEqual([
+      'downloaded: 2',
+      'new locations: 2',
+      'removed locations: 0',
+      'deleted messages: 0',
+      'Message-IDs with several sources: 0',
+      'spam suspects: 1',
+      'errors: 0',
+    ])
+  })
+})
+
+describe('Requirement: Index update after sync', () => {
+  it('Scenario: Index updated', async () => {
+    const server = new FakeMailSource()
+    server.addFolder('INBOX')
+    server.addMessage('INBOX', eml({ messageId: 'a@x', subject: 'Pressemappe' }))
+    expect(await runSync(deps({
+      connect: async () => server,
+    }))).toBe(0)
+
+    const db = openIndex(dataDir)
+    expect(db.prepare('SELECT COUNT(*) FROM fts WHERE fts MATCH \'pressemappe\'').pluck().get()).toBe(1)
+    db.close()
+  })
+
+  it('updates the index also when the run had errors', async () => {
+    const server = new FakeMailSource()
+    server.addFolder('INBOX')
+    server.addFolder('Broken')
+    server.addMessage('INBOX', eml({ messageId: 'a@x', subject: 'Pressemappe' }))
+    server.failingListings.add('Broken')
+    expect(await runSync(deps({
+      connect: async () => server,
+    }))).toBe(1)
+
+    const db = openIndex(dataDir)
+    expect(db.prepare('SELECT COUNT(*) FROM messages').pluck().get()).toBe(1)
+    db.close()
+  })
+
+  it('Scenario: Index update fails', async () => {
+    const server = new FakeMailSource()
+    server.addFolder('INBOX')
+    server.addMessage('INBOX', eml({ messageId: 'a@x', subject: 'Pressemappe' }))
+    mkdirSync(indexPath(dataDir), { recursive: true })
+    const d = deps({
+      connect: async () => server,
+    })
+
+    expect(await runSync(d)).toBe(1)
+    expect(d.output[0]).toMatch(/^errors: 1\n {2}index: /m)
+    const store = openStore(dataDir)
+    expect(store.totals().count).toBe(1)
+    store.close()
+  })
+
+  it('Scenario: Run without connection', async () => {
+    const d = deps({
+      connect: async () => {
+        throw new AuthError('authentication failed')
+      },
+    })
+    expect(await runSync(d)).toBe(1)
+    expect(existsSync(indexPath(dataDir))).toBe(false)
   })
 })

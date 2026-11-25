@@ -11,6 +11,7 @@ export function emptySummary(): SyncSummary {
     removedLocations: 0,
     deletedMessages: 0,
     messageIdsWithSeveralSources: 0,
+    spamSuspects: 0,
     errors: [],
   }
 }
@@ -97,6 +98,7 @@ export function formatSummary(summary: SyncSummary): string {
     `removed locations: ${summary.removedLocations}`,
     `deleted messages: ${summary.deletedMessages}`,
     `Message-IDs with several sources: ${summary.messageIdsWithSeveralSources}`,
+    `spam suspects: ${summary.spamSuspects}`,
     `errors: ${summary.errors.length}`,
     ...summary.errors.map(error => `  ${error}`),
   ]

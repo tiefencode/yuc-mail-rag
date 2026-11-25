@@ -46,8 +46,8 @@ Every group writes its tests first from the scenarios it names and shows them fa
 
 ## 9. Sync integration (`mail-sync`)
 
-- [ ] 9.1 Write tests for "Summary printed" (spam suspects line) and every scenario of "Index update after sync"; extend the existing summary tests; verify they fail
-- [ ] 9.2 Update the index at the end of every run that reached the cache and add the suspects line to the summary; verify the 9.1 tests and all existing sync tests pass
+- [x] 9.1 Write tests for "Summary printed" (spam suspects line) and every scenario of "Index update after sync"; extend the existing summary tests; verify they fail
+- [x] 9.2 Update the index at the end of every run that reached the cache and add the suspects line to the summary; verify the 9.1 tests and all existing sync tests pass
 
 ## 10. Test set and evaluation (`search-evaluation`)
 

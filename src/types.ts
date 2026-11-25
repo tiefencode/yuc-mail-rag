@@ -44,6 +44,7 @@ export interface SyncSummary {
   removedLocations: number
   deletedMessages: number
   messageIdsWithSeveralSources: number
+  spamSuspects: number
   errors: string[]
 }
 
