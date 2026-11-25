@@ -6,6 +6,7 @@ Local, evidence-based search over the email correspondence of Young & Cold Recor
 
 - This project uses OpenSpec: changes run through its own flow (`/opsx:explore`, `/opsx:propose`, `/opsx:update`, `/opsx:apply`, `/opsx:archive`). No other spec workflow skill applies.
 - After `/opsx:archive`, fast-forward `main` onto the feature branch without asking (root on `main`, `git merge --ff-only <branch>`), delete the branch and ask the developer to push.
+- Session titles read `Change <n>: <change-name> – <activities>`, numbering changes in the order they were created, archived ones included (`add-mail-sync` is 1).
 
 ## Commands
 
